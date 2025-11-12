@@ -27,7 +27,6 @@ CREATE TABLE `certificados` (
   `codigo` varchar(255) NOT NULL,
   `tipo` varchar(255) DEFAULT NULL,
   `monto` decimal(38,2) DEFAULT NULL,
-  `factor` decimal(10,6) DEFAULT NULL,
   `fecha` date DEFAULT NULL,
   `estado` varchar(255) DEFAULT NULL,
   `pdf_url` varchar(255) DEFAULT NULL,
@@ -35,7 +34,7 @@ CREATE TABLE `certificados` (
   PRIMARY KEY (`id`),
   KEY `corredor_id` (`corredor_id`),
   CONSTRAINT `certificados_ibfk_1` FOREIGN KEY (`corredor_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,7 +43,6 @@ CREATE TABLE `certificados` (
 
 LOCK TABLES `certificados` WRITE;
 /*!40000 ALTER TABLE `certificados` DISABLE KEYS */;
-INSERT INTO `certificados` VALUES (3,'CERT-004','Tributario Tipo B',68500.00,NULL,'2025-11-12','APROBADO',NULL,12),(4,'CERT-102','Tributario Tipo D',500450.00,10.009000,'2025-10-07','RECHAZADO',NULL,12),(5,'CERT-2345','Tributario Tipo K',2000.00,0.040000,'2025-10-09','APROBADO',NULL,12),(6,'CERT-2241','Tributario Tipo D',6000000.00,120.000000,'2025-11-30','APROBADO',NULL,12);
 /*!40000 ALTER TABLE `certificados` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -57,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-08 19:23:47
+-- Dump completed on 2025-11-12 20:54:30

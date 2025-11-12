@@ -1,7 +1,9 @@
 package com.nuam.mantenedor_tributario.model;
 
 import jakarta.persistence.*;
-import jakarta.validation.constraints.Min; // <-- 1. IMPORTA ESTO
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -12,24 +14,26 @@ public class Certificado {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "El código es obligatorio")
     @Column(nullable = false)
     private String codigo;
+
+    @NotBlank(message = "El tipo es obligatorio")
     private String tipo;
 
-    @Min(value = 0, message = "El monto no puede ser negativo") // <-- 2. AGREGA ESTA LÍNEA
+    @NotNull(message = "El monto es obligatorio")
+    @Min(value = 0, message = "El monto no puede ser negativo")
     private BigDecimal monto;
 
-    @Column(precision = 10, scale = 6)
-    private BigDecimal factor;
-
+    @NotNull(message = "La fecha es obligatoria")
     private LocalDate fecha;
+
     private String estado;
 
     @ManyToOne
     @JoinColumn(name = "corredor_id")
     private Usuario corredor;
 
-    // ... (El resto de tus Getters y Setters) ...
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
     public String getCodigo() { return codigo; }
@@ -38,8 +42,6 @@ public class Certificado {
     public void setTipo(String tipo) { this.tipo = tipo; }
     public BigDecimal getMonto() { return monto; }
     public void setMonto(BigDecimal monto) { this.monto = monto; }
-    public BigDecimal getFactor() { return factor; }
-    public void setFactor(BigDecimal factor) { this.factor = factor; }
     public LocalDate getFecha() { return fecha; }
     public void setFecha(LocalDate fecha) { this.fecha = fecha; }
     public String getEstado() { return estado; }
