@@ -37,8 +37,6 @@ function CargaMasiva({ onCargaExitosa }) {
                 method: 'POST',
                 headers: {
                     'Authorization': auth
-                    // ¡NO se pone 'Content-Type': 'application/json'!
-                    // El navegador lo pondrá como 'multipart/form-data' automáticamente.
                 },
                 body: formData
             });

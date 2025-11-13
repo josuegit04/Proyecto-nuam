@@ -101,7 +101,7 @@ function DashboardAdmin() {
                             <th>Código</th>
                             <th>Monto</th>
                             <th>Estado</th>
-                            <th>Corredor</th>
+                            <th>Usuario</th>
                             <th style={{width: '250px'}}>Acciones</th>
                         </tr>
                     </thead>

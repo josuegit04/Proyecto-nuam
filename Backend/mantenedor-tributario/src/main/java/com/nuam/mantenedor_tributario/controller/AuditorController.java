@@ -29,7 +29,7 @@ public class AuditorController {
 
         String nuevoEstado = body.get("estado");
         if (nuevoEstado == null || (!nuevoEstado.equals("APROBADO") && !nuevoEstado.equals("RECHAZADO"))) {
-            return ResponseEntity.badRequest().build(); // Petición incorrecta
+            return ResponseEntity.badRequest().build();
         }
 
         Optional<Certificado> optCertificado = certificadoRepository.findById(id);

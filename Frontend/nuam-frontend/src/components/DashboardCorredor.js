@@ -100,7 +100,7 @@ function DashboardCorredor() {
                                     <td>{cert.id}</td>
                                     <td>{cert.codigo}</td>
                                     <td>{cert.tipo}</td>
-                                    <td>${cert.monto ? cert.monto.toFixed(2) : '0.00'}</td>
+                                    <td>${cert.monto? cert.monto.toFixed(2) : '0.00'}</td>
                                     <td>{cert.fecha}</td>
                                     <td style={{ fontWeight: 'bold', color: cert.estado === 'PENDIENTE' ? '#ff9800' : (cert.estado === 'APROBADO' ? 'green' : 'red') }}>
                                         {cert.estado}
