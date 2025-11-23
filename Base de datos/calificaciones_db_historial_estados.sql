@@ -16,28 +16,35 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `auditoria_eventos`
+-- Table structure for table `historial_estados`
 --
 
-DROP TABLE IF EXISTS `auditoria_eventos`;
+DROP TABLE IF EXISTS `historial_estados`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `auditoria_eventos` (
+CREATE TABLE `historial_estados` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `evento` varchar(255) NOT NULL,
-  `usuario_correo` varchar(255) DEFAULT NULL,
-  `fecha_evento` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+  `certificado_id` bigint NOT NULL,
+  `usuario_id` bigint NOT NULL,
+  `estado_anterior` varchar(255) DEFAULT NULL,
+  `estado_nuevo` varchar(255) NOT NULL,
+  `observacion` text,
+  `fecha_cambio` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `certificado_id` (`certificado_id`),
+  KEY `usuario_id` (`usuario_id`),
+  CONSTRAINT `historial_estados_ibfk_1` FOREIGN KEY (`certificado_id`) REFERENCES `certificados` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `historial_estados_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `auditoria_eventos`
+-- Dumping data for table `historial_estados`
 --
 
-LOCK TABLES `auditoria_eventos` WRITE;
-/*!40000 ALTER TABLE `auditoria_eventos` DISABLE KEYS */;
-/*!40000 ALTER TABLE `auditoria_eventos` ENABLE KEYS */;
+LOCK TABLES `historial_estados` WRITE;
+/*!40000 ALTER TABLE `historial_estados` DISABLE KEYS */;
+/*!40000 ALTER TABLE `historial_estados` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -49,4 +56,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-23 17:20:07
+-- Dump completed on 2025-11-23 17:20:06

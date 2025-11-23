@@ -1,22 +1,20 @@
 package com.nuam.mantenedor_tributario.controller;
 
 import com.nuam.mantenedor_tributario.model.Certificado;
+import com.nuam.mantenedor_tributario.model.TipoCertificado;
 import com.nuam.mantenedor_tributario.model.Usuario;
 import com.nuam.mantenedor_tributario.repository.CertificadoRepository;
+import com.nuam.mantenedor_tributario.repository.TipoCertificadoRepository;
 import com.nuam.mantenedor_tributario.repository.UsuarioRepository;
 import com.nuam.mantenedor_tributario.service.AuditoriaService;
 import com.nuam.mantenedor_tributario.service.CargaMasivaService;
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/corredor")
@@ -27,61 +25,83 @@ public class CorredorController {
     @Autowired
     private UsuarioRepository usuarioRepository;
     @Autowired
+    private TipoCertificadoRepository tipoCertificadoRepository;
+    @Autowired
     private AuditoriaService auditoriaService;
-
     @Autowired
     private CargaMasivaService cargaMasivaService;
 
     @GetMapping("/certificados")
     public List<Certificado> getCertificados(Authentication auth) {
-        String correoUsuario = auth.getName();
-        List<String> roles = auth.getAuthorities().stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.toList());
+        String correo = auth.getName();
+        Usuario usuario = usuarioRepository.findByCorreo(correo).orElseThrow();
 
-        if (roles.contains("ROLE_ADMIN") || roles.contains("ROLE_AUDITOR")) {
-            return certificadoRepository.findAll();
-        } else {
-            Usuario corredor = usuarioRepository.findByCorreo(correoUsuario)
-                    .orElseThrow(() -> new RuntimeException("Corredor no encontrado para el correo: " + correoUsuario));
-            return certificadoRepository.findByCorredor(corredor);
+        if (usuario.getRol().name().equals("CORREDOR")) {
+            return certificadoRepository.findByCorredor(usuario);
         }
+        return certificadoRepository.findAll();
     }
 
     @PostMapping("/certificados")
-    public Certificado crearCertificado(@Valid @RequestBody Certificado certificado, Authentication auth) {
-        String correoUsuario = auth.getName();
-        Usuario corredor = usuarioRepository.findByCorreo(correoUsuario)
-                .orElseThrow(() -> new RuntimeException("Corredor no encontrado para el correo: " + correoUsuario));
+    public ResponseEntity<?> crearCertificado(@RequestBody Map<String, Object> request, Authentication auth) {
+        try {
+            System.out.println("JSON Recibido del Front: " + request);
 
-        certificado.setCorredor(corredor);
-        certificado.setEstado("PENDIENTE");
-        Certificado nuevo = certificadoRepository.save(certificado);
+            String correo = auth.getName();
+            Usuario corredor = usuarioRepository.findByCorreo(correo).orElseThrow();
 
-        auditoriaService.registrarEvento(correoUsuario, "Creó certificado manual: " + nuevo.getCodigo());
-        return nuevo;
+            String codigoCert = (String) request.get("codigoCertificado");
+            String codigoTipo = (String) request.get("codigoTipoCertificado");
+
+            if (certificadoRepository.existsByCodigoCertificado(codigoCert)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "El código ya existe."));
+            }
+
+            TipoCertificado tipo = tipoCertificadoRepository.findById(codigoTipo)
+                    .orElseThrow(() -> new RuntimeException("Tipo de certificado inválido: " + codigoTipo));
+
+            Certificado cert = new Certificado();
+            cert.setCodigoCertificado(codigoCert);
+            cert.setTipoCertificado(tipo);
+
+            cert.setRutEmisor(String.valueOf(request.get("rutEmisor")));
+            cert.setDvEmisor((String) request.get("dvEmisor"));
+            cert.setRutTitular(String.valueOf(request.get("rutTitular")));
+            cert.setDvTitular((String) request.get("dvTitular"));
+
+            if (request.get("nroCertificado") != null && !request.get("nroCertificado").toString().isEmpty()) {
+                cert.setNroCertificado(Long.parseLong(request.get("nroCertificado").toString()));
+            } else {
+                System.err.println("ERROR: nroCertificado llegó NULO");
+                return ResponseEntity.badRequest().body(Map.of("message", "El Nro de Folio (nroCertificado) es obligatorio."));
+            }
+            cert.setAnioTributario(Integer.parseInt(request.get("anioTributario").toString()));
+            cert.setTipoMoneda((String) request.get("tipoMoneda"));
+            cert.setMontoPago(new java.math.BigDecimal(request.get("montoPago").toString()));
+            cert.setFechaPago(java.time.LocalDate.parse((String) request.get("fechaPago")));
+            cert.setEstado("PENDIENTE");
+            cert.setCorredor(corredor);
+
+            certificadoRepository.save(cert);
+
+            auditoriaService.registrarEvento(correo, "Creó certificado manual: " + codigoCert);
+
+            return ResponseEntity.ok(Map.of("message", "Certificado creado exitosamente"));
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body(Map.of("message", "Error al crear: " + e.getMessage()));
+        }
     }
 
     @PostMapping("/carga-masiva")
     public ResponseEntity<?> cargaMasiva(@RequestParam("file") MultipartFile file, Authentication auth) {
-        if (file.isEmpty()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Por favor, seleccione un archivo."));
-        }
-        if (!file.getContentType().equals("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Error: Solo se permiten archivos .xlsx"));
-        }
         try {
-            String correoUsuario = auth.getName();
-            Usuario corredor = usuarioRepository.findByCorreo(correoUsuario)
-                    .orElseThrow(() -> new RuntimeException("Corredor no encontrado: " + correoUsuario));
-
-            int registrosProcesados = cargaMasivaService.procesarArchivo(file.getInputStream(), corredor);
-
-            return ResponseEntity.ok(Map.of("message", "Archivo procesado exitosamente. " + registrosProcesados + " registros guardados."));
-
+            Usuario corredor = usuarioRepository.findByCorreo(auth.getName()).orElseThrow();
+            int cantidad = cargaMasivaService.procesarArchivo(file.getInputStream(), corredor);
+            return ResponseEntity.ok(Map.of("message", "Procesados: " + cantidad));
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("message", e.getMessage()));
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
 }

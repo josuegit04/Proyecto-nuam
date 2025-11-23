@@ -1,7 +1,11 @@
 package com.nuam.mantenedor_tributario.controller;
 
 import com.nuam.mantenedor_tributario.model.Certificado;
+import com.nuam.mantenedor_tributario.model.HistorialEstado;
+import com.nuam.mantenedor_tributario.model.Usuario;
 import com.nuam.mantenedor_tributario.repository.CertificadoRepository;
+import com.nuam.mantenedor_tributario.repository.HistorialEstadoRepository;
+import com.nuam.mantenedor_tributario.repository.UsuarioRepository;
 import com.nuam.mantenedor_tributario.service.AuditoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,35 +23,47 @@ public class AuditorController {
     private CertificadoRepository certificadoRepository;
 
     @Autowired
+    private UsuarioRepository usuarioRepository;
+
+    @Autowired
+    private HistorialEstadoRepository historialEstadoRepository;
+
+    @Autowired
     private AuditoriaService auditoriaService;
 
     @PutMapping("/certificados/{id}/estado")
-    public ResponseEntity<Certificado> actualizarEstadoCertificado(
+    public ResponseEntity<?> actualizarEstado(
             @PathVariable Long id,
             @RequestBody Map<String, String> body,
             Authentication auth) {
 
         String nuevoEstado = body.get("estado");
-        if (nuevoEstado == null || (!nuevoEstado.equals("APROBADO") && !nuevoEstado.equals("RECHAZADO"))) {
-            return ResponseEntity.badRequest().build();
-        }
+        String observacion = body.get("observacion");
 
-        Optional<Certificado> optCertificado = certificadoRepository.findById(id);
-        if (optCertificado.isEmpty()) {
-            return ResponseEntity.notFound().build();
-        }
+        if (nuevoEstado == null) return ResponseEntity.badRequest().body("El estado es obligatorio");
 
-        Certificado certificado = optCertificado.get();
+        Optional<Certificado> optCert = certificadoRepository.findById(id);
+        if (optCert.isEmpty()) return ResponseEntity.notFound().build();
+
+        Certificado certificado = optCert.get();
+        String estadoAnterior = certificado.getEstado();
+
         certificado.setEstado(nuevoEstado);
-        Certificado certificadoActualizado = certificadoRepository.save(certificado);
+        certificadoRepository.save(certificado);
 
         String correoAuditor = auth.getName();
-        String evento = String.format("Certificado %s fue %s por %s",
-                certificado.getCodigo(),
-                nuevoEstado.toLowerCase(),
-                correoAuditor);
-        auditoriaService.registrarEvento(correoAuditor, evento);
+        Usuario auditor = usuarioRepository.findByCorreo(correoAuditor).orElseThrow();
 
-        return ResponseEntity.ok(certificadoActualizado);
+        HistorialEstado historial = new HistorialEstado();
+        historial.setCertificado(certificado);
+        historial.setUsuario(auditor);
+        historial.setEstadoAnterior(estadoAnterior);
+        historial.setEstadoNuevo(nuevoEstado);
+        historial.setObservacion(observacion);
+        historialEstadoRepository.save(historial);
+
+        auditoriaService.registrarEvento(correoAuditor, "Auditor cambió estado de " + certificado.getCodigoCertificado() + " a " + nuevoEstado);
+
+        return ResponseEntity.ok(certificado);
     }
 }

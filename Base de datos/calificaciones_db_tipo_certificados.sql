@@ -16,28 +16,28 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `auditoria_eventos`
+-- Table structure for table `tipo_certificados`
 --
 
-DROP TABLE IF EXISTS `auditoria_eventos`;
+DROP TABLE IF EXISTS `tipo_certificados`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `auditoria_eventos` (
-  `id` bigint NOT NULL AUTO_INCREMENT,
-  `evento` varchar(255) NOT NULL,
-  `usuario_correo` varchar(255) DEFAULT NULL,
-  `fecha_evento` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (`id`)
+CREATE TABLE `tipo_certificados` (
+  `codigo` varchar(10) NOT NULL,
+  `nombre` varchar(100) NOT NULL,
+  `descripcion` varchar(255) DEFAULT NULL,
+  PRIMARY KEY (`codigo`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `auditoria_eventos`
+-- Dumping data for table `tipo_certificados`
 --
 
-LOCK TABLES `auditoria_eventos` WRITE;
-/*!40000 ALTER TABLE `auditoria_eventos` DISABLE KEYS */;
-/*!40000 ALTER TABLE `auditoria_eventos` ENABLE KEYS */;
+LOCK TABLES `tipo_certificados` WRITE;
+/*!40000 ALTER TABLE `tipo_certificados` DISABLE KEYS */;
+INSERT INTO `tipo_certificados` VALUES ('C1879','Honorarios','Certificado sobre retenciones de honorarios'),('C1887','Sueldos y Salarios','Certificado sobre sueldos, pensiones y jubilaciones'),('C1943','Renta Presunta','Certificado de rentas presuntas');
+/*!40000 ALTER TABLE `tipo_certificados` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

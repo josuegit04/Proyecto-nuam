@@ -1,16 +1,32 @@
 package com.nuam.mantenedor_tributario.controller;
 
-import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import com.nuam.mantenedor_tributario.dto.LoginRequest;
+import com.nuam.mantenedor_tributario.model.Usuario;
+import com.nuam.mantenedor_tributario.service.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
-    @GetMapping("/login")
-    public String login(Authentication auth) {
-        return "Login exitoso. Usuario: " + auth.getName() + " - Roles: " + auth.getAuthorities();
+    @Autowired
+    private AuthService authService;
+
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest loginRequest) {
+        try {
+            Usuario usuario = authService.autenticar(loginRequest);
+            return ResponseEntity.ok("Login exitoso. Rol: " + usuario.getRol());
+
+        } catch (Exception e) {
+
+            if (e.getMessage().contains("BLOQUEADA")) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN).body(e.getMessage());
+            }
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(e.getMessage());
+        }
     }
 }

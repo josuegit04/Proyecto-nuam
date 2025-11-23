@@ -28,9 +28,12 @@ CREATE TABLE `usuarios` (
   `password` varchar(255) NOT NULL,
   `rol` enum('CORREDOR','AUDITOR','ADMIN') NOT NULL,
   `nombre` varchar(255) DEFAULT NULL,
+  `intentos_fallidos` int DEFAULT '0',
+  `cuenta_bloqueada` tinyint(1) DEFAULT '0',
+  `fecha_desbloqueo` datetime DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `correo` (`correo`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -39,7 +42,7 @@ CREATE TABLE `usuarios` (
 
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'admin@empresa.cl','$2a$12$4q9Jf8QXQ2CRC15FzsNXEOKXaqOs3.aWZDALyezZTAm9jqaekts4a','ADMIN','Admin'),(2,'auditor@empresa.cl','$2a$12$UY6LwxvOXccXkj7THFrLQ.27Nh4ORt.OpseSDPMnYIOQV6jyFtq52','AUDITOR','Auditor'),(3,'corredor@empresa.cl','$2a$12$R7oJQORODq9wHKaWXFJwy.WjJTGMNzsWAEp8uO/uT2Q5lymeKzh8m','CORREDOR','Corredor');
+INSERT INTO `usuarios` VALUES (1,'admin@empresa.cl','$2a$12$4q9Jf8QXQ2CRC15FzsNXEOKXaqOs3.aWZDALyezZTAm9jqaekts4a','ADMIN','Admin',0,0,NULL),(2,'auditor@empresa.cl','$2a$12$UY6LwxvOXccXkj7THFrLQ.27Nh4ORt.OpseSDPMnYIOQV6jyFtq52','AUDITOR','Auditor',0,0,NULL),(3,'corredor@empresa.cl','$2a$12$R7oJQORODq9wHKaWXFJwy.WjJTGMNzsWAEp8uO/uT2Q5lymeKzh8m','CORREDOR','Corredor',0,0,NULL),(4,'torpe@empresa.cl','$2a$12$KEhww92zUP3Vp4p1wUNYS.RE0CR9eVGmkETPc7T0kQ9HFlSaFQIbG','CORREDOR','Usuario Torpe',0,0,NULL);
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -52,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-12 20:54:30
+-- Dump completed on 2025-11-23 17:20:07
