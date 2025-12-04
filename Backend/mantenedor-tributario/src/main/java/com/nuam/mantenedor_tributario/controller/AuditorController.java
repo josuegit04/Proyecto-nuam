@@ -1,17 +1,18 @@
 package com.nuam.mantenedor_tributario.controller;
 
+import com.nuam.mantenedor_tributario.model.AuditoriaEvento;
 import com.nuam.mantenedor_tributario.model.Certificado;
+import com.nuam.mantenedor_tributario.model.Factor;
 import com.nuam.mantenedor_tributario.model.HistorialEstado;
 import com.nuam.mantenedor_tributario.model.Usuario;
-import com.nuam.mantenedor_tributario.repository.CertificadoRepository;
-import com.nuam.mantenedor_tributario.repository.HistorialEstadoRepository;
-import com.nuam.mantenedor_tributario.repository.UsuarioRepository;
+import com.nuam.mantenedor_tributario.repository.*;
 import com.nuam.mantenedor_tributario.service.AuditoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -19,17 +20,22 @@ import java.util.Optional;
 @RequestMapping("/api/auditor")
 public class AuditorController {
 
-    @Autowired
-    private CertificadoRepository certificadoRepository;
+    @Autowired private CertificadoRepository certificadoRepository;
+    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private HistorialEstadoRepository historialEstadoRepository;
+    @Autowired private AuditoriaRepository auditoriaRepository;
+    @Autowired private FactorRepository factorRepository;
+    @Autowired private AuditoriaService auditoriaService;
 
-    @Autowired
-    private UsuarioRepository usuarioRepository;
+    @GetMapping("/logs")
+    public List<AuditoriaEvento> getAllLogs() {
+        return auditoriaRepository.findTop50ByOrderByIdDesc();
+    }
 
-    @Autowired
-    private HistorialEstadoRepository historialEstadoRepository;
-
-    @Autowired
-    private AuditoriaService auditoriaService;
+    @GetMapping("/factores")
+    public List<Factor> getFactores() {
+        return factorRepository.findAll();
+    }
 
     @PutMapping("/certificados/{id}/estado")
     public ResponseEntity<?> actualizarEstado(

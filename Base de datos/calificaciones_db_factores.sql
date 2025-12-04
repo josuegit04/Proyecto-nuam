@@ -16,34 +16,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `usuarios`
+-- Table structure for table `factores`
 --
 
-DROP TABLE IF EXISTS `usuarios`;
+DROP TABLE IF EXISTS `factores`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `usuarios` (
+CREATE TABLE `factores` (
   `id` bigint NOT NULL AUTO_INCREMENT,
-  `correo` varchar(255) NOT NULL,
-  `password` varchar(255) NOT NULL,
-  `rol` enum('CORREDOR','AUDITOR','ADMIN') NOT NULL,
-  `nombre` varchar(255) DEFAULT NULL,
-  `intentos_fallidos` int DEFAULT '0',
-  `cuenta_bloqueada` tinyint(1) DEFAULT '0',
-  `fecha_desbloqueo` datetime DEFAULT NULL,
+  `anio` int NOT NULL,
+  `mes` int NOT NULL,
+  `valor` decimal(5,3) NOT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `correo` (`correo`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+  UNIQUE KEY `unique_anio_mes` (`anio`,`mes`),
+  UNIQUE KEY `UKbp2682clrg484qggoq5uh4brx` (`anio`,`mes`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `usuarios`
+-- Dumping data for table `factores`
 --
 
-LOCK TABLES `usuarios` WRITE;
-/*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'admin@empresa.cl','$2a$12$4q9Jf8QXQ2CRC15FzsNXEOKXaqOs3.aWZDALyezZTAm9jqaekts4a','ADMIN','Admin',0,0,NULL),(2,'auditor@empresa.cl','$2a$12$UY6LwxvOXccXkj7THFrLQ.27Nh4ORt.OpseSDPMnYIOQV6jyFtq52','AUDITOR','Auditor',0,0,NULL),(3,'corredor@empresa.cl','$2a$10$3aUORDJemYSmgPghxDKhYOi94UxOxEDidjAjE3Yf9Iq3P/wZKmglq','CORREDOR','Corredor',0,0,NULL),(4,'torpe@empresa.cl','$2a$12$KEhww92zUP3Vp4p1wUNYS.RE0CR9eVGmkETPc7T0kQ9HFlSaFQIbG','CORREDOR','Usuario Torpe',0,0,NULL);
-/*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
+LOCK TABLES `factores` WRITE;
+/*!40000 ALTER TABLE `factores` DISABLE KEYS */;
+INSERT INTO `factores` VALUES (1,2024,1,1.048),(2,2024,2,1.042),(3,2024,3,1.037),(4,2024,4,1.033),(5,2024,5,1.029),(6,2024,6,1.025),(7,2024,7,1.021),(8,2024,8,1.018),(9,2024,9,1.014),(10,2024,10,1.010),(11,2024,11,1.006),(12,2024,12,1.000);
+/*!40000 ALTER TABLE `factores` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -55,4 +52,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-03 23:47:33
+-- Dump completed on 2025-12-03 23:47:32

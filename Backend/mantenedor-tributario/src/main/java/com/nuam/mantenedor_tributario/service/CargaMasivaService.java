@@ -1,9 +1,11 @@
 package com.nuam.mantenedor_tributario.service;
 
 import com.nuam.mantenedor_tributario.model.Certificado;
+import com.nuam.mantenedor_tributario.model.Factor;
 import com.nuam.mantenedor_tributario.model.TipoCertificado;
 import com.nuam.mantenedor_tributario.model.Usuario;
 import com.nuam.mantenedor_tributario.repository.CertificadoRepository;
+import com.nuam.mantenedor_tributario.repository.FactorRepository;
 import com.nuam.mantenedor_tributario.repository.TipoCertificadoRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -18,16 +20,17 @@ import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CargaMasivaService {
 
     @Autowired
     private CertificadoRepository certificadoRepository;
-
     @Autowired
     private TipoCertificadoRepository tipoCertificadoRepository;
-
+    @Autowired
+    private FactorRepository factorRepository;
     @Autowired
     private AuditoriaService auditoriaService;
 
@@ -60,33 +63,21 @@ public class CargaMasivaService {
                     BigDecimal monto = getNumericCellValue(currentRow.getCell(9));
                     LocalDate fecha = getDateCellValue(currentRow.getCell(10));
 
-
                     if (codigoCert == null || monto == null || codigoTipoStr == null || anio == null) {
-                        throw new Exception("Faltan datos obligatorios (Código, Tipo, Año o Monto)");
+                        throw new Exception("Faltan datos obligatorios");
                     }
+                    if (monto.compareTo(BigDecimal.ZERO) < 0) throw new Exception("Monto negativo");
+                    if (anio < 1990 || anio > 2100) throw new Exception("Año inválido");
 
-                    if (monto.compareTo(BigDecimal.ZERO) < 0) {
-                        throw new Exception("El monto no puede ser negativo.");
-                    }
-
-                    if (anio < 1990 || anio > 2100) {
-                        throw new Exception("El Año Tributario " + anio + " no es válido.");
-                    }
-
-                    if (!validarRut(rutEmisor, dvEmisor)) {
-                        throw new Exception("RUT Emisor inválido (" + rutEmisor + "-" + dvEmisor + ")");
-                    }
-                    if (!validarRut(rutTitular, dvTitular)) {
-                        throw new Exception("RUT Titular inválido (" + rutTitular + "-" + dvTitular + ")");
-                    }
+                    if (!validarRut(rutEmisor, dvEmisor)) throw new Exception("RUT Emisor inválido");
+                    if (!validarRut(rutTitular, dvTitular)) throw new Exception("RUT Titular inválido");
 
                     if (certificadoRepository.existsByCodigoCertificado(codigoCert)) {
-                        throw new Exception("El certificado " + codigoCert + " ya existe en el sistema.");
+                        throw new Exception("Certificado duplicado: " + codigoCert);
                     }
 
                     TipoCertificado tipo = tipoCertificadoRepository.findById(codigoTipoStr)
-                            .orElseThrow(() -> new Exception("Tipo de Certificado '" + codigoTipoStr + "' no existe."));
-
+                            .orElseThrow(() -> new Exception("Tipo '" + codigoTipoStr + "' no existe."));
 
                     Certificado cert = new Certificado();
                     cert.setTipoCertificado(tipo);
@@ -100,9 +91,20 @@ public class CargaMasivaService {
                     cert.setTipoMoneda(moneda);
                     cert.setMontoPago(monto);
                     cert.setFechaPago(fecha);
+
+                    Optional<Factor> factorOpt = factorRepository.findByAnioAndMes(fecha.getYear(), fecha.getMonthValue());
+
+                    if (factorOpt.isPresent()) {
+                        BigDecimal valorFactor = factorOpt.get().getValor();
+                        cert.setFactorAplicado(valorFactor.doubleValue());
+                        cert.setMontoActualizado(monto.multiply(valorFactor));
+                    } else {
+                        cert.setFactorAplicado(1.0);
+                        cert.setMontoActualizado(monto);
+                    }
+
                     cert.setEstado("PENDIENTE");
                     cert.setCorredor(corredor);
-
                     certificadosParaGuardar.add(cert);
 
                 } catch (Exception e) {
@@ -114,27 +116,9 @@ public class CargaMasivaService {
         if (!certificadosParaGuardar.isEmpty()) {
             certificadoRepository.saveAll(certificadosParaGuardar);
             auditoriaService.registrarEvento(corredor.getCorreo(),
-                    "Carga Masiva: " + certificadosParaGuardar.size() + " certificados subidos exitosamente.");
+                    "Carga Masiva: " + certificadosParaGuardar.size() + " certificados subidos.");
         }
         return certificadosParaGuardar.size();
-    }
-
-    private boolean validarRut(String rutStr, String dvStr) {
-        if (rutStr == null || dvStr == null) return false;
-        try {
-            int rut = Integer.parseInt(rutStr);
-            char dv = dvStr.toUpperCase().charAt(0);
-
-            int m = 0, s = 1;
-            for (; rut != 0; rut /= 10) {
-                s = (s + rut % 10 * (9 - m++ % 6)) % 11;
-            }
-            char dvCalculado = (char) (s != 0 ? s + 47 : 75);
-
-            return dv == dvCalculado;
-        } catch (NumberFormatException e) {
-            return false;
-        }
     }
 
     private boolean isRowEmpty(Row row) {
@@ -155,19 +139,26 @@ public class CargaMasivaService {
         try { return new BigDecimal(cell.getStringCellValue().replace(",", ".")); } catch (Exception e) { return null; }
     }
     private Long getLongCellValue(Cell cell) {
-        if (cell == null) return null;
-        if (cell.getCellType() == CellType.NUMERIC) return (long) cell.getNumericCellValue();
-        try { return Long.parseLong(getStringCellValue(cell)); } catch (Exception e) { return null; }
+        try { return (long) cell.getNumericCellValue(); } catch (Exception e) { return null; }
     }
     private Integer getIntegerCellValue(Cell cell) {
-        if (cell == null) return null;
-        if (cell.getCellType() == CellType.NUMERIC) return (int) cell.getNumericCellValue();
-        try { return Integer.parseInt(getStringCellValue(cell)); } catch (Exception e) { return null; }
+        try { return (int) cell.getNumericCellValue(); } catch (Exception e) { return null; }
     }
     private LocalDate getDateCellValue(Cell cell) {
         if (cell != null && DateUtil.isCellDateFormatted(cell)) {
             return cell.getDateCellValue().toInstant().atZone(ZoneId.systemDefault()).toLocalDate();
         }
         return null;
+    }
+    private boolean validarRut(String rutStr, String dvStr) {
+        if (rutStr == null || dvStr == null) return false;
+        try {
+            int rut = Integer.parseInt(rutStr);
+            char dv = dvStr.toUpperCase().charAt(0);
+            int m = 0, s = 1;
+            for (; rut != 0; rut /= 10) s = (s + rut % 10 * (9 - m++ % 6)) % 11;
+            char dvCalculado = (char) (s != 0 ? s + 47 : 75);
+            return dv == dvCalculado;
+        } catch (Exception e) { return false; }
     }
 }

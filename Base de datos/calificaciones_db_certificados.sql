@@ -38,13 +38,15 @@ CREATE TABLE `certificados` (
   `anio_tributario` int NOT NULL,
   `tipo_moneda` varchar(255) DEFAULT NULL,
   `nro_certificado` bigint NOT NULL,
+  `monto_actualizado` decimal(38,2) DEFAULT NULL,
+  `factor_aplicado` double DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `codigo_certificado` (`codigo_certificado`),
   KEY `corredor_id` (`corredor_id`),
   KEY `fk_tipo_certificado` (`codigo_tipo_certificado`),
   CONSTRAINT `certificados_ibfk_1` FOREIGN KEY (`corredor_id`) REFERENCES `usuarios` (`id`),
   CONSTRAINT `fk_tipo_certificado` FOREIGN KEY (`codigo_tipo_certificado`) REFERENCES `tipo_certificados` (`codigo`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -53,6 +55,7 @@ CREATE TABLE `certificados` (
 
 LOCK TABLES `certificados` WRITE;
 /*!40000 ALTER TABLE `certificados` DISABLE KEYS */;
+INSERT INTO `certificados` VALUES (3,500000.00,'2025-04-01','APROBADO',NULL,3,'76000111','2','21985694','6','C1887','CERT-TEST-01',2025,'CLP',5001,500000.00,1),(5,100010.00,'2024-09-11','APROBADO',NULL,3,'22043180','0','16130467','0','C1887','1415521',2024,'CLP',2421,100810.08,1.008);
 /*!40000 ALTER TABLE `certificados` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -65,4 +68,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-23 17:20:07
+-- Dump completed on 2025-12-03 23:47:33

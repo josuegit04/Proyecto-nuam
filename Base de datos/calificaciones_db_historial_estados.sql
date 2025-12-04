@@ -35,7 +35,7 @@ CREATE TABLE `historial_estados` (
   KEY `usuario_id` (`usuario_id`),
   CONSTRAINT `historial_estados_ibfk_1` FOREIGN KEY (`certificado_id`) REFERENCES `certificados` (`id`) ON DELETE CASCADE,
   CONSTRAINT `historial_estados_ibfk_2` FOREIGN KEY (`usuario_id`) REFERENCES `usuarios` (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -44,6 +44,7 @@ CREATE TABLE `historial_estados` (
 
 LOCK TABLES `historial_estados` WRITE;
 /*!40000 ALTER TABLE `historial_estados` DISABLE KEYS */;
+INSERT INTO `historial_estados` VALUES (2,3,1,'PENDIENTE','APROBADO','','2025-12-04 01:10:08'),(3,5,2,'PENDIENTE','APROBADO','','2025-12-04 02:39:42');
 /*!40000 ALTER TABLE `historial_estados` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -56,4 +57,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-11-23 17:20:06
+-- Dump completed on 2025-12-03 23:47:32

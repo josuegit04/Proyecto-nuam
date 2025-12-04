@@ -1,11 +1,11 @@
 package com.nuam.mantenedor_tributario.controller;
 
+import com.nuam.mantenedor_tributario.model.AuditoriaEvento;
 import com.nuam.mantenedor_tributario.model.Certificado;
+import com.nuam.mantenedor_tributario.model.Factor;
 import com.nuam.mantenedor_tributario.model.TipoCertificado;
 import com.nuam.mantenedor_tributario.model.Usuario;
-import com.nuam.mantenedor_tributario.repository.CertificadoRepository;
-import com.nuam.mantenedor_tributario.repository.TipoCertificadoRepository;
-import com.nuam.mantenedor_tributario.repository.UsuarioRepository;
+import com.nuam.mantenedor_tributario.repository.*;
 import com.nuam.mantenedor_tributario.service.AuditoriaService;
 import com.nuam.mantenedor_tributario.service.CargaMasivaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,8 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @RestController
 @RequestMapping("/api/corredor")
@@ -26,6 +30,10 @@ public class CorredorController {
     private UsuarioRepository usuarioRepository;
     @Autowired
     private TipoCertificadoRepository tipoCertificadoRepository;
+    @Autowired
+    private FactorRepository factorRepository;
+    @Autowired
+    private AuditoriaRepository auditoriaRepository;
     @Autowired
     private AuditoriaService auditoriaService;
     @Autowired
@@ -42,11 +50,14 @@ public class CorredorController {
         return certificadoRepository.findAll();
     }
 
+    @GetMapping("/mis-logs")
+    public List<AuditoriaEvento> getMisLogs(Authentication auth) {
+        return auditoriaRepository.findByUsuarioCorreoOrderByFechaEventoDesc(auth.getName());
+    }
+
     @PostMapping("/certificados")
     public ResponseEntity<?> crearCertificado(@RequestBody Map<String, Object> request, Authentication auth) {
         try {
-            System.out.println("JSON Recibido del Front: " + request);
-
             String correo = auth.getName();
             Usuario corredor = usuarioRepository.findByCorreo(correo).orElseThrow();
 
@@ -58,7 +69,7 @@ public class CorredorController {
             }
 
             TipoCertificado tipo = tipoCertificadoRepository.findById(codigoTipo)
-                    .orElseThrow(() -> new RuntimeException("Tipo de certificado inválido: " + codigoTipo));
+                    .orElseThrow(() -> new RuntimeException("Tipo de certificado inválido"));
 
             Certificado cert = new Certificado();
             cert.setCodigoCertificado(codigoCert);
@@ -69,21 +80,38 @@ public class CorredorController {
             cert.setRutTitular(String.valueOf(request.get("rutTitular")));
             cert.setDvTitular((String) request.get("dvTitular"));
 
-            if (request.get("nroCertificado") != null && !request.get("nroCertificado").toString().isEmpty()) {
+            if (request.get("nroCertificado") != null) {
                 cert.setNroCertificado(Long.parseLong(request.get("nroCertificado").toString()));
             } else {
-                System.err.println("ERROR: nroCertificado llegó NULO");
-                return ResponseEntity.badRequest().body(Map.of("message", "El Nro de Folio (nroCertificado) es obligatorio."));
+                return ResponseEntity.badRequest().body(Map.of("message", "El Nro de Folio es obligatorio."));
             }
+
             cert.setAnioTributario(Integer.parseInt(request.get("anioTributario").toString()));
             cert.setTipoMoneda((String) request.get("tipoMoneda"));
-            cert.setMontoPago(new java.math.BigDecimal(request.get("montoPago").toString()));
-            cert.setFechaPago(java.time.LocalDate.parse((String) request.get("fechaPago")));
+
+            BigDecimal montoOriginal = new BigDecimal(request.get("montoPago").toString());
+            LocalDate fechaPago = LocalDate.parse((String) request.get("fechaPago"));
+
+            cert.setMontoPago(montoOriginal);
+            cert.setFechaPago(fechaPago);
+
+            Optional<Factor> factorOpt = factorRepository.findByAnioAndMes(fechaPago.getYear(), fechaPago.getMonthValue());
+
+            if (factorOpt.isPresent()) {
+                BigDecimal valorFactor = factorOpt.get().getValor();
+                BigDecimal montoFinal = montoOriginal.multiply(valorFactor);
+
+                cert.setFactorAplicado(valorFactor.doubleValue());
+                cert.setMontoActualizado(montoFinal);
+            } else {
+                cert.setFactorAplicado(1.0);
+                cert.setMontoActualizado(montoOriginal);
+            }
+
             cert.setEstado("PENDIENTE");
             cert.setCorredor(corredor);
 
             certificadoRepository.save(cert);
-
             auditoriaService.registrarEvento(correo, "Creó certificado manual: " + codigoCert);
 
             return ResponseEntity.ok(Map.of("message", "Certificado creado exitosamente"));

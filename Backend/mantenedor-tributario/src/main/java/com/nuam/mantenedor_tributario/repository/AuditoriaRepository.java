@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface AuditoriaRepository extends JpaRepository<AuditoriaEvento, Long> {
     List<AuditoriaEvento> findTop50ByOrderByIdDesc();
+    List<AuditoriaEvento> findByUsuarioCorreoOrderByFechaEventoDesc(String usuarioCorreo);
 }

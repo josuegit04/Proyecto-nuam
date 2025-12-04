@@ -15,13 +15,19 @@ public class Certificado {
     @JoinColumn(name = "codigo_tipo_certificado")
     private TipoCertificado tipoCertificado;
 
+    @ManyToOne
+    @JoinColumn(name = "corredor_id")
+    private Usuario corredor;
+
     @Column(name = "rut_emisor")
     private String rutEmisor;
+
     @Column(name = "dv_emisor")
     private String dvEmisor;
 
     @Column(name = "rut_titular")
     private String rutTitular;
+
     @Column(name = "dv_titular")
     private String dvTitular;
 
@@ -29,16 +35,13 @@ public class Certificado {
     private String codigoCertificado;
 
     @Column(name = "nro_certificado")
-    private Long nroCertificado; // <--- OJO CON ESTE
+    private Long nroCertificado;
 
     @Column(name = "anio_tributario")
     private Integer anioTributario;
 
     @Column(name = "tipo_moneda")
     private String tipoMoneda;
-
-    @Column(name = "monto_pago")
-    private BigDecimal montoPago;
 
     @Column(name = "fecha_pago")
     private LocalDate fechaPago;
@@ -48,9 +51,16 @@ public class Certificado {
     @Column(name = "pdf_url")
     private String pdfUrl;
 
-    @ManyToOne
-    @JoinColumn(name = "corredor_id")
-    private Usuario corredor;
+
+    @Column(name = "monto_pago")
+    private BigDecimal montoPago;
+
+    @Column(name = "monto_actualizado")
+    private BigDecimal montoActualizado;
+
+    @Column(name = "factor_aplicado")
+    private Double factorAplicado;
+
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
@@ -58,13 +68,18 @@ public class Certificado {
     public TipoCertificado getTipoCertificado() { return tipoCertificado; }
     public void setTipoCertificado(TipoCertificado tipoCertificado) { this.tipoCertificado = tipoCertificado; }
 
+    public Usuario getCorredor() { return corredor; }
+    public void setCorredor(Usuario corredor) { this.corredor = corredor; }
+
     public String getRutEmisor() { return rutEmisor; }
     public void setRutEmisor(String rutEmisor) { this.rutEmisor = rutEmisor; }
+
     public String getDvEmisor() { return dvEmisor; }
     public void setDvEmisor(String dvEmisor) { this.dvEmisor = dvEmisor; }
 
     public String getRutTitular() { return rutTitular; }
     public void setRutTitular(String rutTitular) { this.rutTitular = rutTitular; }
+
     public String getDvTitular() { return dvTitular; }
     public void setDvTitular(String dvTitular) { this.dvTitular = dvTitular; }
 
@@ -80,18 +95,21 @@ public class Certificado {
     public String getTipoMoneda() { return tipoMoneda; }
     public void setTipoMoneda(String tipoMoneda) { this.tipoMoneda = tipoMoneda; }
 
-    public BigDecimal getMontoPago() { return montoPago; } // IMPORTANTE
-    public void setMontoPago(BigDecimal montoPago) { this.montoPago = montoPago; }
-
-    public LocalDate getFechaPago() { return fechaPago; } // IMPORTANTE
+    public LocalDate getFechaPago() { return fechaPago; }
     public void setFechaPago(LocalDate fechaPago) { this.fechaPago = fechaPago; }
 
     public String getEstado() { return estado; }
     public void setEstado(String estado) { this.estado = estado; }
 
-    public Usuario getCorredor() { return corredor; }
-    public void setCorredor(Usuario corredor) { this.corredor = corredor; }
-
     public String getPdfUrl() { return pdfUrl; }
     public void setPdfUrl(String pdfUrl) { this.pdfUrl = pdfUrl; }
+
+    public BigDecimal getMontoPago() { return montoPago; }
+    public void setMontoPago(BigDecimal montoPago) { this.montoPago = montoPago; }
+
+    public BigDecimal getMontoActualizado() { return montoActualizado; }
+    public void setMontoActualizado(BigDecimal montoActualizado) { this.montoActualizado = montoActualizado; }
+
+    public Double getFactorAplicado() { return factorAplicado; }
+    public void setFactorAplicado(Double factorAplicado) { this.factorAplicado = factorAplicado; }
 }
