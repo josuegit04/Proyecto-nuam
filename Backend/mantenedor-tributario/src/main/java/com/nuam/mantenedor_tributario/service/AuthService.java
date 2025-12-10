@@ -33,7 +33,7 @@ public class AuthService {
         } else {
             aumentarIntentosFallidos(usuario);
 
-            int restantes = 5 - usuario.getIntentosFallidos();
+            int restantes = 3 - usuario.getIntentosFallidos();
             throw new Exception("Credenciales incorrectas. Intentos restantes: " + restantes);
         }
     }
@@ -42,7 +42,7 @@ public class AuthService {
         int nuevosIntentos = usuario.getIntentosFallidos() + 1;
         usuario.setIntentosFallidos(nuevosIntentos);
 
-        if (nuevosIntentos >= 5) {
+        if (nuevosIntentos >= 3) {
             usuario.setCuentaBloqueada(true);
         }
 

@@ -1,10 +1,6 @@
 package com.nuam.mantenedor_tributario.controller;
 
-import com.nuam.mantenedor_tributario.model.AuditoriaEvento;
-import com.nuam.mantenedor_tributario.model.Certificado;
-import com.nuam.mantenedor_tributario.model.Factor;
-import com.nuam.mantenedor_tributario.model.HistorialEstado;
-import com.nuam.mantenedor_tributario.model.Usuario;
+import com.nuam.mantenedor_tributario.model.*;
 import com.nuam.mantenedor_tributario.repository.*;
 import com.nuam.mantenedor_tributario.service.AuditoriaService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,6 +33,11 @@ public class AuditorController {
         return factorRepository.findAll();
     }
 
+    @GetMapping("/certificados")
+    public List<Certificado> getCertificados() {
+        return certificadoRepository.findAll();
+    }
+
     @PutMapping("/certificados/{id}/estado")
     public ResponseEntity<?> actualizarEstado(
             @PathVariable Long id,
@@ -55,6 +56,13 @@ public class AuditorController {
         String estadoAnterior = certificado.getEstado();
 
         certificado.setEstado(nuevoEstado);
+
+        if ("RECHAZADO".equals(nuevoEstado)) {
+            certificado.setObservacionRechazo(observacion);
+        } else {
+            certificado.setObservacionRechazo(null);
+        }
+
         certificadoRepository.save(certificado);
 
         String correoAuditor = auth.getName();
@@ -68,7 +76,8 @@ public class AuditorController {
         historial.setObservacion(observacion);
         historialEstadoRepository.save(historial);
 
-        auditoriaService.registrarEvento(correoAuditor, "Auditor cambió estado de " + certificado.getCodigoCertificado() + " a " + nuevoEstado);
+        String accion = nuevoEstado.equals("APROBADO") ? "APROBÓ" : "RECHAZÓ";
+        auditoriaService.registrarEvento(correoAuditor, "AUDITOR: " + accion + " certificado Folio " + certificado.getNroCertificado());
 
         return ResponseEntity.ok(certificado);
     }

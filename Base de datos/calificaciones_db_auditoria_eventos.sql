@@ -28,7 +28,7 @@ CREATE TABLE `auditoria_eventos` (
   `usuario_correo` varchar(255) DEFAULT NULL,
   `fecha_evento` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -37,7 +37,6 @@ CREATE TABLE `auditoria_eventos` (
 
 LOCK TABLES `auditoria_eventos` WRITE;
 /*!40000 ALTER TABLE `auditoria_eventos` DISABLE KEYS */;
-INSERT INTO `auditoria_eventos` VALUES (1,'Carga Masiva: 2 certificados subidos exitosamente.','corredor@empresa.cl','2025-11-23 23:52:38'),(2,'Auditor cambió estado de CERT-TEST-01 a APROBADO','admin@empresa.cl','2025-11-23 23:53:11'),(3,'Eliminó certificado: CERT-TEST-01','admin@empresa.cl','2025-11-23 23:53:17'),(4,'Eliminó certificado: CERT-TEST-02','admin@empresa.cl','2025-11-23 23:53:20'),(5,'Carga Masiva: 2 certificados subidos.','corredor@empresa.cl','2025-12-04 04:08:45'),(6,'Editó usuario ID: 3','admin@empresa.cl','2025-12-04 04:09:26'),(7,'Editó usuario ID: 3','corredor@empresa.cl','2025-12-04 04:09:43'),(8,'Auditor cambió estado de CERT-TEST-01 a APROBADO','admin@empresa.cl','2025-12-04 04:10:08'),(9,'Eliminó certificado: CERT-TEST-02','admin@empresa.cl','2025-12-04 04:10:19'),(10,'Creó usuario nuevo: melapela@empresa.cl','admin@empresa.cl','2025-12-04 04:11:30'),(11,'Eliminó usuario ID: 5','admin@empresa.cl','2025-12-04 04:12:10'),(12,'Editó certificado: CERT-TEST-01','admin@empresa.cl','2025-12-04 04:17:34'),(13,'Creó certificado manual: 1415521','corredor@empresa.cl','2025-12-04 05:05:24'),(14,'Editó certificado: 1415521','admin@empresa.cl','2025-12-04 05:17:41'),(15,'Auditor cambió estado de 1415521 a APROBADO','auditor@empresa.cl','2025-12-04 05:39:42');
 /*!40000 ALTER TABLE `auditoria_eventos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -50,4 +49,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-03 23:47:32
+-- Dump completed on 2025-12-10 15:52:43

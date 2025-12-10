@@ -42,7 +42,7 @@ CREATE TABLE `usuarios` (
 
 LOCK TABLES `usuarios` WRITE;
 /*!40000 ALTER TABLE `usuarios` DISABLE KEYS */;
-INSERT INTO `usuarios` VALUES (1,'admin@empresa.cl','$2a$12$4q9Jf8QXQ2CRC15FzsNXEOKXaqOs3.aWZDALyezZTAm9jqaekts4a','ADMIN','Admin',0,0,NULL),(2,'auditor@empresa.cl','$2a$12$UY6LwxvOXccXkj7THFrLQ.27Nh4ORt.OpseSDPMnYIOQV6jyFtq52','AUDITOR','Auditor',0,0,NULL),(3,'corredor@empresa.cl','$2a$10$3aUORDJemYSmgPghxDKhYOi94UxOxEDidjAjE3Yf9Iq3P/wZKmglq','CORREDOR','Corredor',0,0,NULL),(4,'torpe@empresa.cl','$2a$12$KEhww92zUP3Vp4p1wUNYS.RE0CR9eVGmkETPc7T0kQ9HFlSaFQIbG','CORREDOR','Usuario Torpe',0,0,NULL);
+INSERT INTO `usuarios` VALUES (1,'admin@empresa.cl','$2a$12$97zSBORbEpyPcUnFNPsSHu8v5bko7BXSF4h6LoQ7YY6h4941bhhRm','ADMIN','Admin',0,0,NULL),(2,'auditor@empresa.cl','$2a$12$UY6LwxvOXccXkj7THFrLQ.27Nh4ORt.OpseSDPMnYIOQV6jyFtq52','AUDITOR','Auditor',0,0,NULL),(3,'corredor@empresa.cl','$2a$10$3aUORDJemYSmgPghxDKhYOi94UxOxEDidjAjE3Yf9Iq3P/wZKmglq','CORREDOR','Corredor',0,0,NULL),(4,'torpe@empresa.cl','$2a$12$KEhww92zUP3Vp4p1wUNYS.RE0CR9eVGmkETPc7T0kQ9HFlSaFQIbG','CORREDOR','Usuario Torpe',0,0,NULL);
 /*!40000 ALTER TABLE `usuarios` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
@@ -55,4 +55,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-03 23:47:33
+-- Dump completed on 2025-12-10 15:52:43

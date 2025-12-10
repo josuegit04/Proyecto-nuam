@@ -4,8 +4,11 @@ import com.nuam.mantenedor_tributario.model.Certificado;
 import com.nuam.mantenedor_tributario.model.Usuario;
 import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
+import java.util.Optional;
 
 public interface CertificadoRepository extends JpaRepository<Certificado, Long> {
+
     List<Certificado> findByCorredor(Usuario corredor);
     boolean existsByCodigoCertificado(String codigo);
+    Optional<Certificado> findByCodigoCertificado(String codigo);
 }

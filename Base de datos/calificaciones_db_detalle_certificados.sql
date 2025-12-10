@@ -16,28 +16,31 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `tipo_certificados`
+-- Table structure for table `detalle_certificados`
 --
 
-DROP TABLE IF EXISTS `tipo_certificados`;
+DROP TABLE IF EXISTS `detalle_certificados`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `tipo_certificados` (
-  `codigo` varchar(10) NOT NULL,
-  `nombre` varchar(100) NOT NULL,
-  `descripcion` varchar(255) DEFAULT NULL,
-  PRIMARY KEY (`codigo`)
+CREATE TABLE `detalle_certificados` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `certificado_id` bigint NOT NULL,
+  `numero_columna` int NOT NULL,
+  `monto` decimal(38,2) DEFAULT NULL,
+  `factor` double DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_detalle_cert` (`certificado_id`),
+  CONSTRAINT `detalle_certificados_ibfk_1` FOREIGN KEY (`certificado_id`) REFERENCES `certificados` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Dumping data for table `tipo_certificados`
+-- Dumping data for table `detalle_certificados`
 --
 
-LOCK TABLES `tipo_certificados` WRITE;
-/*!40000 ALTER TABLE `tipo_certificados` DISABLE KEYS */;
-INSERT INTO `tipo_certificados` VALUES ('C1879','Honorarios','Certificado sobre retenciones de honorarios'),('C1887','Sueldos y Salarios','Certificado sobre sueldos, pensiones y jubilaciones'),('C1943','Renta Presunta','Certificado de rentas presuntas'),('DJ1948','Dividendos y Retiros','Declaración Jurada anual sobre dividendos distribuidos y créditos correspondientes');
-/*!40000 ALTER TABLE `tipo_certificados` ENABLE KEYS */;
+LOCK TABLES `detalle_certificados` WRITE;
+/*!40000 ALTER TABLE `detalle_certificados` DISABLE KEYS */;
+/*!40000 ALTER TABLE `detalle_certificados` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 

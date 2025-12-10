@@ -1,10 +1,6 @@
 package com.nuam.mantenedor_tributario.controller;
 
-import com.nuam.mantenedor_tributario.model.AuditoriaEvento;
-import com.nuam.mantenedor_tributario.model.Certificado;
-import com.nuam.mantenedor_tributario.model.Factor;
-import com.nuam.mantenedor_tributario.model.TipoCertificado;
-import com.nuam.mantenedor_tributario.model.Usuario;
+import com.nuam.mantenedor_tributario.model.*;
 import com.nuam.mantenedor_tributario.repository.*;
 import com.nuam.mantenedor_tributario.service.AuditoriaService;
 import com.nuam.mantenedor_tributario.service.CargaMasivaService;
@@ -24,26 +20,18 @@ import java.util.Optional;
 @RequestMapping("/api/corredor")
 public class CorredorController {
 
-    @Autowired
-    private CertificadoRepository certificadoRepository;
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-    @Autowired
-    private TipoCertificadoRepository tipoCertificadoRepository;
-    @Autowired
-    private FactorRepository factorRepository;
-    @Autowired
-    private AuditoriaRepository auditoriaRepository;
-    @Autowired
-    private AuditoriaService auditoriaService;
-    @Autowired
-    private CargaMasivaService cargaMasivaService;
+    @Autowired private CertificadoRepository certificadoRepository;
+    @Autowired private UsuarioRepository usuarioRepository;
+    @Autowired private TipoCertificadoRepository tipoCertificadoRepository;
+    @Autowired private FactorRepository factorRepository;
+    @Autowired private AuditoriaRepository auditoriaRepository;
+    @Autowired private AuditoriaService auditoriaService;
+    @Autowired private CargaMasivaService cargaMasivaService;
 
     @GetMapping("/certificados")
     public List<Certificado> getCertificados(Authentication auth) {
         String correo = auth.getName();
         Usuario usuario = usuarioRepository.findByCorreo(correo).orElseThrow();
-
         if (usuario.getRol().name().equals("CORREDOR")) {
             return certificadoRepository.findByCorredor(usuario);
         }
@@ -55,70 +43,68 @@ public class CorredorController {
         return auditoriaRepository.findByUsuarioCorreoOrderByFechaEventoDesc(auth.getName());
     }
 
-    @PostMapping("/certificados")
-    public ResponseEntity<?> crearCertificado(@RequestBody Map<String, Object> request, Authentication auth) {
+    @PutMapping("/certificados/{id}")
+    public ResponseEntity<?> editarCertificado(@PathVariable Long id, @RequestBody Map<String, Object> request, Authentication auth) {
         try {
-            String correo = auth.getName();
-            Usuario corredor = usuarioRepository.findByCorreo(correo).orElseThrow();
+            Certificado cert = certificadoRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Certificado no encontrado"));
 
-            String codigoCert = (String) request.get("codigoCertificado");
-            String codigoTipo = (String) request.get("codigoTipoCertificado");
-
-            if (certificadoRepository.existsByCodigoCertificado(codigoCert)) {
-                return ResponseEntity.badRequest().body(Map.of("message", "El código ya existe."));
+            if (!cert.getCorredor().getCorreo().equals(auth.getName())) {
+                return ResponseEntity.status(403).body(Map.of("message", "No tiene permiso para editar este certificado"));
             }
 
-            TipoCertificado tipo = tipoCertificadoRepository.findById(codigoTipo)
-                    .orElseThrow(() -> new RuntimeException("Tipo de certificado inválido"));
-
-            Certificado cert = new Certificado();
-            cert.setCodigoCertificado(codigoCert);
-            cert.setTipoCertificado(tipo);
-
-            cert.setRutEmisor(String.valueOf(request.get("rutEmisor")));
-            cert.setDvEmisor((String) request.get("dvEmisor"));
-            cert.setRutTitular(String.valueOf(request.get("rutTitular")));
-            cert.setDvTitular((String) request.get("dvTitular"));
-
-            if (request.get("nroCertificado") != null) {
-                cert.setNroCertificado(Long.parseLong(request.get("nroCertificado").toString()));
-            } else {
-                return ResponseEntity.badRequest().body(Map.of("message", "El Nro de Folio es obligatorio."));
+            if ("APROBADO".equals(cert.getEstado())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "No se puede editar un certificado Aprobado."));
             }
 
-            cert.setAnioTributario(Integer.parseInt(request.get("anioTributario").toString()));
-            cert.setTipoMoneda((String) request.get("tipoMoneda"));
+            cert.setMercado((String) request.get("mercado"));
+            cert.setInstrumento((String) request.get("instrumento"));
+            cert.setDescripcion((String) request.get("descripcion"));
+            if (request.get("secuenciaEvento") != null) cert.setSecuenciaEvento(Long.parseLong(request.get("secuenciaEvento").toString()));
+            if (request.get("isFut") != null) cert.setIsFut(Boolean.parseBoolean(request.get("isFut").toString()));
 
-            BigDecimal montoOriginal = new BigDecimal(request.get("montoPago").toString());
+            cert.setMontoPago(new BigDecimal(request.get("montoPago").toString()));
             LocalDate fechaPago = LocalDate.parse((String) request.get("fechaPago"));
-
-            cert.setMontoPago(montoOriginal);
             cert.setFechaPago(fechaPago);
+            cert.setAnioTributario(Integer.parseInt(request.get("anioTributario").toString()));
 
             Optional<Factor> factorOpt = factorRepository.findByAnioAndMes(fechaPago.getYear(), fechaPago.getMonthValue());
-
             if (factorOpt.isPresent()) {
                 BigDecimal valorFactor = factorOpt.get().getValor();
-                BigDecimal montoFinal = montoOriginal.multiply(valorFactor);
-
                 cert.setFactorAplicado(valorFactor.doubleValue());
-                cert.setMontoActualizado(montoFinal);
-            } else {
-                cert.setFactorAplicado(1.0);
-                cert.setMontoActualizado(montoOriginal);
+                cert.setMontoActualizado(cert.getMontoPago().multiply(valorFactor));
+            }
+
+            cert.getDetalles().clear();
+
+            if (request.get("detalles") != null) {
+                List<Map<String, Object>> listaDetalles = (List<Map<String, Object>>) request.get("detalles");
+                double sumaFactores = 0;
+
+                for (Map<String, Object> detMap : listaDetalles) {
+                    Integer numCol = Integer.parseInt(detMap.get("numeroColumna").toString());
+                    BigDecimal m = new BigDecimal(detMap.get("monto").toString());
+                    Double f = Double.parseDouble(detMap.get("factor").toString());
+
+                    if (numCol >= 8 && numCol <= 16) sumaFactores += f;
+
+                    DetalleCertificado detalle = new DetalleCertificado(numCol, m, f);
+                    cert.addDetalle(detalle);
+                }
+                if (sumaFactores > 1.0001) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "Error: Suma factores 8-16 supera 1."));
+                }
             }
 
             cert.setEstado("PENDIENTE");
-            cert.setCorredor(corredor);
 
             certificadoRepository.save(cert);
-            auditoriaService.registrarEvento(correo, "Creó certificado manual: " + codigoCert);
+            auditoriaService.registrarEvento(auth.getName(), "Corrigió certificado folio: " + cert.getNroCertificado());
 
-            return ResponseEntity.ok(Map.of("message", "Certificado creado exitosamente"));
+            return ResponseEntity.ok(Map.of("message", "Certificado corregido y enviado a revisión."));
 
         } catch (Exception e) {
-            e.printStackTrace();
-            return ResponseEntity.status(500).body(Map.of("message", "Error al crear: " + e.getMessage()));
+            return ResponseEntity.status(500).body(Map.of("message", "Error al editar: " + e.getMessage()));
         }
     }
 
